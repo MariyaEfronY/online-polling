@@ -1,28 +1,21 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
-export interface IOption {
-  text: string;
-  votes: number;
-}
-
 export interface IPoll extends Document {
   question: string;
-  options: IOption[];
+  options: { text: string; votes: number }[];
   createdBy: mongoose.Types.ObjectId;
-  expiryDate?: Date;
 }
 
-const OptionSchema: Schema<IOption> = new Schema({
-  text: { type: String, required: true },
-  votes: { type: Number, default: 0 },
-});
-
-const PollSchema: Schema<IPoll> = new Schema(
+const PollSchema = new Schema<IPoll>(
   {
     question: { type: String, required: true },
-    options: [OptionSchema],
-    createdBy: { type: Schema.Types.ObjectId, ref: "User" },
-    expiryDate: { type: Date },
+    options: [
+      {
+        text: { type: String, required: true },
+        votes: { type: Number, default: 0 },
+      },
+    ],
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }
 );

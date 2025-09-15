@@ -1,7 +1,8 @@
 // pages/api/polls/index.ts
 import type { NextApiResponse } from "next";
+import mongoose from "mongoose"; // 👈 import ObjectId type
 import dbConnect from "../../../lib/dbConnect";
-import Poll from "../../../models/Poll";
+import Poll, { IPoll } from "../../../models/Poll";
 import withAuth, { AuthRequest } from "../../../middleware/auth";
 
 async function handler(req: AuthRequest, res: NextApiResponse) {
@@ -11,14 +12,15 @@ async function handler(req: AuthRequest, res: NextApiResponse) {
     try {
       const { question, options } = req.body;
 
-      const poll = await Poll.create({
+      const poll: IPoll = await Poll.create({
         question,
         options,
         createdBy: req.user!._id,
       });
 
-      // ✅ TS-safe now because req.user is IUser & Document
-      req.user!.createdPolls.push(poll._id);
+      // 👇 fix: cast poll._id to ObjectId
+      req.user!.createdPolls.push(poll._id as unknown as mongoose.Types.ObjectId);
+
       await req.user!.save();
 
       return res.status(201).json(poll);
