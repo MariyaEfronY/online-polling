@@ -1,16 +1,15 @@
 // middleware/auth.ts
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiRequest, NextApiResponse, NextApiHandler } from "next";
 import jwt from "jsonwebtoken";
 import dbConnect from "../lib/dbConnect";
 import User, { IUser } from "../models/User";
+import { Document } from "mongoose";
 
 export interface AuthRequest extends NextApiRequest {
-  user?: IUser;
+  user?: IUser & Document;
 }
 
-export default function withAuth<
-  T extends (req: AuthRequest, res: NextApiResponse) => any
->(handler: T) {
+export default function withAuth(handler: NextApiHandler): NextApiHandler {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     await dbConnect();
 
@@ -20,18 +19,19 @@ export default function withAuth<
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
-        id: string;
-      };
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
 
-      const user = await User.findById(decoded.id);
+      const user = await User.findById(decoded.id) as IUser & Document;
       if (!user) {
         return res.status(401).json({ message: "User not found" });
       }
 
-      (req as AuthRequest).user = user; // 👈 safely attach user
-      return handler(req as AuthRequest, res); // 👈 cast to AuthRequest
+      // Attach user safely
+      (req as AuthRequest).user = user;
+
+      return (handler as any)(req as AuthRequest, res);
     } catch (error) {
+      console.error("Auth error:", error);
       return res.status(401).json({ message: "Unauthorized" });
     }
   };

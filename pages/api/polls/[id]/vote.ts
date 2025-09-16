@@ -1,48 +1,46 @@
-import { NextApiRequest, NextApiResponse } from "next";
+// pages/api/polls/[id]/vote.ts
+import type { NextApiResponse } from "next";
+import type { AuthRequest } from "../../../../middleware/auth";
 import dbConnect from "../../../../lib/dbConnect";
 import Poll from "../../../../models/Poll";
-import Vote from "../../../../models/Vote";
+import withAuth from "../../../../middleware/auth";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+async function handler(req: AuthRequest, res: NextApiResponse) {
   await dbConnect();
-  const { id } = req.query;
 
   if (req.method === "POST") {
-    const { option, userId } = req.body;
-    const ip =
-      (req.headers["x-forwarded-for"] as string) ||
-      req.socket.remoteAddress ||
-      "unknown";
+    try {
+      const { id } = req.query;
+      const { optionIndex } = req.body;
 
-    const poll = await Poll.findById(id);
-    if (!poll) return res.status(404).json({ message: "Poll not found" });
+      console.log("Vote API hit 👉", { id, optionIndex, user: req.user?._id });
 
-    const alreadyVoted = await Vote.findOne({
-      pollId: id,
-      $or: [{ userId }, { ip }],
-    });
+      if (typeof optionIndex !== "number") {
+        return res.status(400).json({ message: "optionIndex must be a number" });
+      }
 
-    if (alreadyVoted) {
-      return res.status(400).json({ message: "Already voted" });
+      const poll = await Poll.findById(id);
+      if (!poll) {
+        return res.status(404).json({ message: "Poll not found" });
+      }
+
+      if (optionIndex < 0 || optionIndex >= poll.options.length) {
+        return res.status(400).json({ message: "Invalid option index" });
+      }
+
+      poll.options[optionIndex].votes += 1;
+      await poll.save();
+
+      return res.status(200).json(poll);
+    } catch (error: any) {
+      console.error("🔥 Vote error details:", error.message, error.stack);
+      return res.status(500).json({ message: "Error voting on poll", error: error.message });
     }
-
-    const vote = await Vote.create({ pollId: id, userId, ip, option });
-
-    const optIndex = poll.options.findIndex((o) => o.text === option);
-    if (optIndex === -1) {
-      return res.status(400).json({ message: "Invalid option" });
-    }
-
-    poll.options[optIndex].votes += 1;
-    await poll.save();
-
-    return res
-      .status(201)
-      .json({ message: "Vote cast successfully", poll, vote });
   }
 
-  return res.status(405).json({ message: "Method not allowed" });
+  res.setHeader("Allow", ["POST"]);
+  return res.status(405).end(`Method ${req.method} Not Allowed`);
 }
+
+// 👇 This is required
+export default withAuth(handler);
