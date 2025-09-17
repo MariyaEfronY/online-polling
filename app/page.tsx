@@ -1,21 +1,23 @@
-import Link from "next/link";
+"use client";
+import { useEffect, useState } from "react";
+import API from "../utils/api";
 
 export default function HomePage() {
+  const [polls, setPolls] = useState<any[]>([]);
+
+  useEffect(() => {
+    API.get("/polls")
+      .then((res) => setPolls(res.data))
+      .catch((err) => console.error(err));
+  }, []);
+
   return (
-    <div className="bg-gradient-to-r from-primary to-primary-light text-white py-20 text-center rounded-2xl shadow-lg">
-      <h1 className="text-5xl font-bold">Online Polling</h1>
-      <p className="mt-4 text-lg">Create, share, and vote on polls instantly.</p>
-      <div className="mt-6 space-x-4">
-        <Link href="/polls/create">
-          <button className="bg-secondary px-6 py-3 rounded-lg hover:bg-secondary-light">
-            Create Poll
-          </button>
-        </Link>
-        <Link href="/polls">
-          <button className="bg-white text-primary px-6 py-3 rounded-lg hover:bg-gray-200">
-            View Polls
-          </button>
-        </Link>
+    <div>
+      <h1 className="text-3xl font-bold mb-6">Trending Polls</h1>
+      <div className="grid gap-4">
+        {polls.map((poll) => (
+          <PollCard key={poll._id} poll={poll} />
+        ))}
       </div>
     </div>
   );

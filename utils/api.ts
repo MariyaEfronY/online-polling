@@ -1,13 +1,12 @@
 // utils/api.ts
-import axios, { InternalAxiosRequestConfig } from "axios";
+import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:3000/api", // adjust if backend URL changes
+  baseURL: "http://localhost:3000/api", // ✅ point to Express backend
 });
 
-// Interceptor for attaching JWT token
 API.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  (config) => {
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

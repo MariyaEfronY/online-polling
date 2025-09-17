@@ -1,16 +1,12 @@
-// lib/auth.ts
-
-export const getToken = (): string | null => {
-  if (typeof window === "undefined") return null; // prevent SSR issues
+export function getToken(): string | null {
+  if (typeof window === "undefined") return null;
   return localStorage.getItem("token");
-};
+}
 
-export const setToken = (token: string) => {
-  if (typeof window === "undefined") return;
+export function setToken(token: string) {
   localStorage.setItem("token", token);
-};
+}
 
-export const clearToken = () => {
-  if (typeof window === "undefined") return;
+export function clearToken() {
   localStorage.removeItem("token");
-};
+}

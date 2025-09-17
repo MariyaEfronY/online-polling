@@ -1,44 +1,46 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import API from "../utils/api";
 
 export default function PollDetail({ poll }: { poll: any }) {
-  const [localPoll, setLocalPoll] = useState(poll);
-  const [token, setToken] = useState<string | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [data, setData] = useState(poll);
 
-  useEffect(() => {
-    setToken(localStorage.getItem("token"));
-  }, []);
-
-  const vote = async (index: number) => {
+  const handleVote = async () => {
+    if (selected === null) return;
     try {
-      if (!token) {
-        alert("Please login to vote");
-        return;
-      }
-
-      await API.post(`/polls/${localPoll._id}/vote`, { optionIndex: index });
-
-      // Refresh poll
-      const updated = await API.get(`/polls/${localPoll._id}`);
-      setLocalPoll(updated.data);
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Vote failed");
+      const res = await API.post(`/polls/${data._id}/vote`, {
+        optionIndex: selected,
+      });
+      setData(res.data.poll || res.data);
+    } catch (err) {
+      console.error("Vote failed", err);
     }
   };
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">{localPoll.question}</h2>
-      {localPoll.options.map((opt: any, i: number) => (
-        <button
-          key={i}
-          onClick={() => vote(i)}
-          className="block border p-2 my-1 w-full text-left"
-        >
-          {opt.text} ({opt.votes})
-        </button>
-      ))}
+    <div className="p-6 bg-white shadow rounded-lg">
+      <h1 className="text-2xl font-bold mb-4">{data.question}</h1>
+      <ul className="space-y-2">
+        {data.options.map((opt: any, i: number) => (
+          <li key={i}>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="vote"
+                onChange={() => setSelected(i)}
+              />
+              {opt.text} ({opt.votes} votes)
+            </label>
+          </li>
+        ))}
+      </ul>
+      <button
+        onClick={handleVote}
+        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+      >
+        Submit Vote
+      </button>
     </div>
   );
 }

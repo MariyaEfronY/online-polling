@@ -2,8 +2,8 @@ import "./globals.css";
 import Navbar from "../components/Navbar";
 
 export const metadata = {
-  title: "Online Polling",
-  description: "Create, vote and manage polls with JWT protection",
+  title: "Online Polling App",
+  description: "Vote and create polls easily",
 };
 
 export default function RootLayout({
@@ -13,9 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-background text-gray-900">
+      <body className="bg-gray-100 text-gray-900">
         <Navbar />
-        <main className="container mx-auto px-4 py-8">{children}</main>
+        <main className="container mx-auto p-6">{children}</main>
       </body>
     </html>
   );
