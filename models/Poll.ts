@@ -1,26 +1,31 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+// models/Poll.ts
+import mongoose, { Schema, Document } from "mongoose";
+
+interface Option {
+  text: string;
+  votes: number;
+}
 
 export interface IPoll extends Document {
   question: string;
-  options: { text: string; votes: number }[];
-  createdBy: mongoose.Types.ObjectId;
+  options: Option[];
+  createdBy: mongoose.Schema.Types.ObjectId;
+  voters: mongoose.Schema.Types.ObjectId[]; // ✅ added
 }
 
-const PollSchema = new Schema<IPoll>(
+const optionSchema = new Schema<Option>({
+  text: { type: String, required: true },
+  votes: { type: Number, default: 0 },
+});
+
+const pollSchema = new Schema<IPoll>(
   {
     question: { type: String, required: true },
-    options: [
-      {
-        text: { type: String, required: true },
-        votes: { type: Number, default: 0 },
-      },
-    ],
+    options: [optionSchema],
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    voters: [{ type: Schema.Types.ObjectId, ref: "User" }], // ✅ new
   },
   { timestamps: true }
 );
 
-const Poll: Model<IPoll> =
-  mongoose.models.Poll || mongoose.model<IPoll>("Poll", PollSchema);
-
-export default Poll;
+export default mongoose.models.Poll || mongoose.model<IPoll>("Poll", pollSchema);
