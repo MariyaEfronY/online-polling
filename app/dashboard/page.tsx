@@ -29,7 +29,7 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold mb-4">My Polls</h1>
       <ul className="space-y-2">
         {polls.map((poll) => (
-          <li key={poll._id} className="p-4 bg-white shadow rounded">
+          <li key={poll._id} className="p-4 bg-white text-black shadow rounded">
             {poll.question}
           </li>
         ))}

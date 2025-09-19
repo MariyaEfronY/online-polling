@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import API from "../utils/api";
+import PollCard from "../components/PollCard";
+
 
 export default function HomePage() {
   const [polls, setPolls] = useState<any[]>([]);

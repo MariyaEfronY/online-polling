@@ -5,7 +5,7 @@ export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
-  createdPolls: mongoose.Types.ObjectId[];
+ createdPolls: mongoose.Types.ObjectId[];
   comparePassword(password: string): Promise<boolean>;
 }
 
@@ -14,7 +14,7 @@ const UserSchema: Schema<IUser> = new Schema(
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    createdPolls: [{ type: Schema.Types.ObjectId, ref: "Poll" }],
+    createdPolls: [{ type: mongoose.Schema.Types.ObjectId, ref: "Poll" }],
   },
   { timestamps: true }
 );
