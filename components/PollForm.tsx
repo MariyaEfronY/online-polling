@@ -6,14 +6,18 @@ export default function PollForm() {
   const [options, setOptions] = useState<string[]>(["", ""]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await API.post("/polls", { question, options });
-      alert("Poll created!");
-    } catch (err) {
-      console.error("Error creating poll", err);
-    }
-  };
+  e.preventDefault();
+  try {
+    const res = await API.post("/polls", {
+      question,
+      options: options.map((o) => ({ text: o })),
+    });
+    console.log("Poll created:", res.data);
+  } catch (error) {
+    console.error("Error creating poll", error);
+  }
+};
+
 
   return (
     <form onSubmit={handleSubmit}>
