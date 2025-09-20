@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const existing = await User.findOne({ email });
     if (existing) return NextResponse.json({ message: "User exists" }, { status: 400 });
     const user = await User.create({ username, email, password });
-    const token = signStaffToken(user._id.toString());
+    const token = signStaffToken(user._id?.toString() || "");
     return NextResponse.json({ token, user: { id: user._id, username, email } }, { status: 201 });
   } catch (err: any) {
     console.error("Signup err:", err);

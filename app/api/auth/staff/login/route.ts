@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     if (!email || !password) return NextResponse.json({ message: "Missing fields" }, { status: 400 });
     const user = await User.findOne({ email });
     if (!user || !(await user.comparePassword(password))) return NextResponse.json({ message: "Invalid cred" }, { status: 401 });
-    const token = signStaffToken(user._id.toString());
+    const token = signStaffToken(user._id?.toString() || "");
     return NextResponse.json({ token, user: { id: user._id, username: user.username, email } }, { status: 200 });
   } catch (err: any) {
     console.error("Login err:", err);

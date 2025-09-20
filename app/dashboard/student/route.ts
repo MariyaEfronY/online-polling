@@ -16,7 +16,8 @@ export async function GET(req: Request) {
       question: (v.poll as any).question,
       optionIndex: v.optionIndex,
       isCorrect: v.isCorrect,
-      submittedAt: v.createdAt
+      submittedAt: (v as any).createdAt
+
     }));
     return NextResponse.json({ results: data }, { status: 200 });
   } catch (err: any) {

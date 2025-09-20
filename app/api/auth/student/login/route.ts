@@ -13,7 +13,8 @@ export async function POST(req: Request) {
     if (!student) {
       student = await Student.create({ dno, email });
     }
-    const token = signStudentToken(student._id.toString());
+    
+const token = signStudentToken(student._id?.toString() || "");
     return NextResponse.json({ token, student: { id: student._id, dno, email } }, { status: 200 });
   } catch (err: any) {
     console.error("Student login err:", err);
