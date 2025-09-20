@@ -12,7 +12,7 @@ export default function StaffLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.post("/api/login", { email, password });
+      const res = await axios.post("/api/auth/staff/login", { email, password });
       localStorage.setItem("token", res.data.token); // save staff token
       router.push("/staff/create-poll"); // redirect after login
     } catch (err: any) {
