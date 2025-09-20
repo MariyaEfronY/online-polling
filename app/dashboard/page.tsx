@@ -124,7 +124,7 @@ export default function DashboardPage() {
             <p className="text-gray-600 mt-2">Manage and track your created polls</p>
           </div>
           <a
-            href="/create-poll"
+            href="/polls/create"
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition flex items-center"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -143,7 +143,7 @@ export default function DashboardPage() {
             <p className="mt-2 text-gray-500">Get started by creating your first poll.</p>
             <div className="mt-6">
               <a
-                href="/create-poll"
+                href="/polls/create"
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Create Your First Poll
