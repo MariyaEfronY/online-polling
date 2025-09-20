@@ -1,68 +1,50 @@
+import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Poll from "@/models/Poll";
-import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import { verifyTokenGetActor } from "@/lib/auth";
 
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   await dbConnect();
-
   try {
-    const body = await req.json();
-    console.log("📥 Incoming body:", body); // 🔍 log request
-
-    const { question, options } = body;
-
-    if (!question || !options || options.length < 2) {
-      return NextResponse.json(
-        { message: "Poll must have question + at least 2 options" },
-        { status: 400 }
-      );
-    }
-
-    // 🔑 Verify JWT
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET!);
-    } catch (err) {
-      console.error("❌ JWT verification failed:", err);
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-    }
-
-    console.log("✅ Authenticated user:", decoded);
-
-    const formattedOptions = options.map((opt: any) =>
-      typeof opt === "string" ? { text: opt, votes: 0 } : opt
-    );
-
-    const poll = await Poll.create({
-      question,
-      options: formattedOptions,
-      createdBy: decoded.id, // ✅ now tied to user
+    // list active polls. For students, return all active polls; staff can also view.
+    const polls = await Poll.find().populate("createdBy", "username email").sort({ createdAt: -1 });
+    // Do not send correctOption in list (for tests)
+    const safe = polls.map(p => {
+      const obj = p.toObject();
+      delete obj.correctOption;
+      return obj;
     });
-
-    return NextResponse.json(poll, { status: 201 });
-  } catch (error: any) {
-    console.error("❌ Error creating poll:", error.message, error.stack);
-    return NextResponse.json(
-      { message: error.message || "Error creating poll" },
-      { status: 500 }
-    );
+    return NextResponse.json(safe, { status: 200 });
+  } catch (err: any) {
+    console.error(err);
+    return NextResponse.json({ message: "Error fetching polls" }, { status: 500 });
   }
 }
 
-export async function GET() {
+export async function POST(req: Request) {
   await dbConnect();
+  const actor = await verifyTokenGetActor(req);
+  if (!actor || actor.type !== "staff") return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
   try {
-    const polls = await Poll.find().populate("createdBy", "username email");
-    return NextResponse.json(polls, { status: 200 });
-  } catch (error: any) {
-    console.error("❌ Error fetching polls:", error);
-    return NextResponse.json({ message: "Error fetching polls" }, { status: 500 });
+    const { question, options, correctOption, expiryDate } = await req.json();
+    if (!question || !options || options.length < 2) return NextResponse.json({ message: "Invalid payload" }, { status: 400 });
+
+    const formatted = options.map((o: any) => typeof o === "string" ? { text: o, votes: 0 } : o);
+    const poll = await Poll.create({
+      question,
+      options: formatted,
+      correctOption,
+      createdBy: actor.actor._id,
+      expiryDate: expiryDate ? new Date(expiryDate) : undefined,
+    });
+    // link to staff
+    const user = actor.actor;
+    (user as any).createdPolls.push(poll._id);
+    await (user as any).save();
+    return NextResponse.json(poll, { status: 201 });
+  } catch (err: any) {
+    console.error("Create poll err:", err);
+    return NextResponse.json({ message: "Error creating poll" }, { status: 500 });
   }
 }

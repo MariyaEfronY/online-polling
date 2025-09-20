@@ -1,25 +1,27 @@
-import axios from "axios";
-
-// Dynamically set API base URL
-const baseURL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+// utils/api.ts
+import axios, { AxiosRequestHeaders } from "axios";
 
 const API = axios.create({
-  baseURL,
+  baseURL: "http://localhost:3000/api", // ✅ point to your Next.js API routes
 });
 
-// Attach token to every request if available
+// ✅ Interceptor to attach token if available
 API.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers = {
+          ...(config.headers as AxiosRequestHeaders),
+          Authorization: `Bearer ${token}`,
+        };
       }
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 export default API;

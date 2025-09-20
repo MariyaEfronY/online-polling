@@ -1,17 +1,14 @@
-"use client";
+// components/PollCard.tsx
 import Link from "next/link";
 
 export default function PollCard({ poll }: { poll: any }) {
   return (
-    <div className="p-4 bg-white shadow rounded-lg">
-      <h2 className="text-xl font-semibold">{poll.question}</h2>
-      <p className="text-gray-600">By {poll.createdBy?.username || "Unknown"}</p>
-      <Link
-        href={`/polls/${poll._id}`}
-        className="text-blue-600 hover:underline mt-2 block"
-      >
-        View & Vote
-      </Link>
+    <div className="p-4 bg-white rounded shadow">
+      <h3 className="font-semibold">{poll.question}</h3>
+      <p className="text-sm text-gray-500 mt-2">{poll.options?.length} options</p>
+      <div className="mt-3">
+        <Link href={`/polls/${poll._id}`} className="text-indigo-600">Take test</Link>
+      </div>
     </div>
   );
 }

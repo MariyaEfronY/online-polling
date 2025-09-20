@@ -1,23 +1,23 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+// models/User.ts
+import mongoose, { Document, Model, Schema } from "mongoose";
 import bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
- createdPolls: mongoose.Types.ObjectId[];
+  role: "staff";
+  createdPolls: mongoose.Types.ObjectId[];
   comparePassword(password: string): Promise<boolean>;
 }
 
-const UserSchema: Schema<IUser> = new Schema(
-  {
-    username: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    createdPolls: [{ type: mongoose.Schema.Types.ObjectId, ref: "Poll" }],
-  },
-  { timestamps: true }
-);
+const UserSchema = new Schema<IUser>({
+  username: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, default: "staff" },
+  createdPolls: [{ type: Schema.Types.ObjectId, ref: "Poll" }],
+}, { timestamps: true });
 
 UserSchema.pre("save", async function (next) {
   const user = this as IUser;
@@ -27,10 +27,8 @@ UserSchema.pre("save", async function (next) {
 });
 
 UserSchema.methods.comparePassword = async function (password: string) {
-  return await bcrypt.compare(password, this.password);
+  return bcrypt.compare(password, this.password);
 };
 
-const User: Model<IUser> =
-  mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
-
+const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
 export default User;
