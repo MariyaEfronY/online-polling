@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getToken, clearToken } from "../lib/auth";
+import { getToken, clearToken } from "../lib/authClient"; // ✅ use client-side file
 
 export default function Navbar() {
   const [token, setToken] = useState<string | null>(null);
